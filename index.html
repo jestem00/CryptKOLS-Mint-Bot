@@ -681,6 +681,10 @@ nav { justify-content: space-between; }
   color: var(--text-3);
   white-space: nowrap;
 }
+@media(max-width:768px){
+  .nav-center { display:none !important; }
+  #refresh-btn { display:none !important; }
+}	
 </style>
 </head>
 <body>
@@ -756,6 +760,27 @@ nav { justify-content: space-between; }
     <!-- Mint status banner (single — the nav pill is the secondary indicator) -->
     <div class="mint-banner closed" id="mint-banner">⏸ Mint not yet scheduled</div>
 
+	<div class="supply-grid" id="supply-grid">
+	  <div class="s-card tot">
+		<div class="s-label">Total Minted</div>
+		<div class="s-nums"><span id="s-total-minted">—</span> <span class="hi">/ 4,200</span></div>
+		<div class="s-bar"><div class="s-fill tot" id="s-total-bar" style="width:0%"></div></div>
+		<div class="s-pct" id="s-total-pct">0%</div>
+	  </div>
+	  <div class="s-card eth">
+		<div class="s-label">ETH Path</div>
+		<div class="s-nums"><span id="s-eth-minted">—</span> <span class="hi">/ 3,510</span></div>
+		<div class="s-bar"><div class="s-fill eth" id="s-eth-bar" style="width:0%"></div></div>
+		<div class="s-pct" id="s-eth-pct">0%</div>
+	  </div>
+	  <div class="s-card bzro">
+		<div class="s-label">ERC-20 Path</div>
+		<div class="s-nums"><span id="s-erc20-minted">—</span> <span class="hi">/ 690</span></div>
+		<div class="s-bar"><div class="s-fill bzro" id="s-erc20-bar" style="width:0%"></div></div>
+		<div class="s-pct" id="s-erc20-pct">0%</div>
+	  </div>
+	</div>
+	  
     <!-- Mode tabs -->
     <div class="mode-tabs">
       <button class="mode-tab active" data-mode="simple"   onclick="setMode('simple')">Simple</button>
@@ -2700,6 +2725,26 @@ async function loadChainState() {
   S.erc20TxIdx  = Number(await r(()=>c.erc20TxCount(mintAddr)));
   S.erc20Minted = Number(await r(()=>c.erc20MintCount(mintAddr)));
 
+	const totalMinted    = Number(await r(()=>c.totalMinted()));
+	const totalEthMinted = Number(await r(()=>c.totalEthMinted()));
+	const totalErc20Minted = Number(await r(()=>c.totalErc20Minted()));
+
+	tx('s-total-minted', totalMinted.toLocaleString());
+	tx('s-eth-minted',   totalEthMinted.toLocaleString());
+	tx('s-erc20-minted', totalErc20Minted.toLocaleString());
+
+	const pctTotal = (totalMinted / 4200 * 100).toFixed(1);
+	const pctEth   = (totalEthMinted / 3510 * 100).toFixed(1);
+	const pctErc20 = (totalErc20Minted / 690 * 100).toFixed(1);
+
+	document.getElementById('s-total-bar').style.width = pctTotal + '%';
+	document.getElementById('s-eth-bar').style.width   = pctEth + '%';
+	document.getElementById('s-erc20-bar').style.width = pctErc20 + '%';
+
+	tx('s-total-pct', pctTotal + '%');
+	tx('s-eth-pct',   pctEth + '%');
+	tx('s-erc20-pct', pctErc20 + '%');
+	
   console.log('[CK] state:', { mintOpen:S.mintOpen, mintStartTime:S.mintStartTime,
     ethTxIdx:S.ethTxIdx, ethMinted:S.ethMinted,
     erc20TxIdx:S.erc20TxIdx, erc20Minted:S.erc20Minted, mintAddr });
